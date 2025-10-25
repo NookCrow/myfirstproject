@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elemental Knights - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 900px;
+            height: 650px;
+            background: rgba(10, 10, 20, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 238, 255, 0.3);
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #333366;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px currentColor;
+            letter-spacing: 2px;
+            animation: glow 2s infinite alternate;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #cccccc;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #333366, #222244);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            margin: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-fire {
+            background: linear-gradient(to bottom, #ff2a00, #cc2200);
+            border: 1px solid #ff7b00;
+            animation: firePulse 3s infinite;
+        }
+
+        .btn-ice {
+            background: linear-gradient(to bottom, #4ae3fc, #00aacc);
+            border: 1px solid #ffffff;
+            animation: icePulse 3s infinite;
+        }
+
+        .btn-earth {
+            background: linear-gradient(to bottom, #42b883, #2e8b57);
+            border: 1px solid #8b4513;
+            animation: earthPulse 3s infinite;
+        }
+
+        .btn-lightning {
+            background: linear-gradient(to bottom, #00eeff, #0099cc);
+            border: 1px solid #ffe600;
+            animation: lightningPulse 3s infinite;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background: rgba(50, 50, 80, 0.7);
+            z-index: 10;
+        }
+
+        /* Main Menu Styles */
+        #main-menu {
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a14 100%);
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .title-glow {
+            color: #00eeff;
+            text-shadow: 0 0 20px #00eeff, 0 0 40px #00eeff;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 300px;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            animation: slideIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .menu-btn:nth-child(1) { animation-delay: 0.2s; }
+        .menu-btn:nth-child(2) { animation-delay: 0.4s; }
+        .menu-btn:nth-child(3) { animation-delay: 0.6s; }
+        .menu-btn:nth-child(4) { animation-delay: 0.8s; }
+
+        /* Roster Screen */
+        .roster-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .knight-card {
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+            animation: cardAppear 0.5s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .knight-card:nth-child(1) { animation-delay: 0.1s; }
+        .knight-card:nth-child(2) { animation-delay: 0.2s; }
+        .knight-card:nth-child(3) { animation-delay: 0.3s; }
+        .knight-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .knight-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .knight-card.fire {
+            border-left: 5px solid #ff2a00;
+            animation: fireGlow 3s infinite alternate;
+        }
+
+        .knight-card.ice {
+            border-left: 5px solid #4ae3fc;
+            animation: iceGlow 3s infinite alternate;
+        }
+
+        .knight-card.earth {
+            border-left: 5px solid #42b883;
+            animation: earthGlow 3s infinite alternate;
+        }
+
+        .knight-card.lightning {
+            border-left: 5px solid #00eeff;
+            animation: lightningGlow 3s infinite alternate;
+        }
+
+        .knight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .knight-name {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .knight-level {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .knight-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .knight-abilities {
+            margin-top: 10px;
+        }
+
+        .ability-tag {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        .knight-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .knight-action-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        /* Creation Screen */
+        .creation-container {
+            display: flex;
+            gap: 30px;
+            height: 100%;
+        }
+
+        .knight-preview {
+            flex: 1;
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .knight-sprite {
+            width: 120px;
+            height: 120px;
+            margin: 20px 0;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            box-shadow: 0 0 20px currentColor;
+            transition: all 0.5s ease;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .knight-sprite.fire {
+            background: radial-gradient(circle, #ff2a00, #8b0000);
+            color: #ff7b00;
+        }
+
+        .knight-sprite.ice {
+            background: radial-gradient(circle, #4ae3fc, #0066cc);
+            color: #ffffff;
+        }
+
+        .knight-sprite.earth {
+            background: radial-gradient(circle, #42b883, #228b22);
+            color: #8b4513;
+        }
+
+        .knight-sprite.lightning {
+            background: radial-gradient(circle, #00eeff, #0000ff);
+            color: #ffe600;
+        }
+
+        .preview-stats {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .stat-bar {
+            height: 10px;
+            background: #1a1a3a;
+            border-radius: 5px;
+            margin: 5px 0 15px 0;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-fill.health {
+            background: linear-gradient(to right, #ff4444, #ff0000);
+            animation: healthPulse 2s infinite;
+        }
+
+        .stat-fill.mana {
+            background: linear-gradient(to right, #4444ff, #0000ff);
+            animation: manaPulse 2s infinite;
+        }
+
+        .creation-options {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        .element-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .element-btn {
+            padding: 20px;
+            font-size: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .abilities-container {
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .ability-item {
+            background: rgba(30, 30, 60, 0.7);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .ability-item:nth-child(1) { animation-delay: 0.1s; }
+        .ability-item:nth-child(2) { animation-delay: 0.2s; }
+        .ability-item:nth-child(3) { animation-delay: 0.3s; }
+        .ability-item:nth-child(4) { animation-delay: 0.4s; }
+
+        .ability-item:hover {
+            background: rgba(40, 40, 80, 0.9);
+            transform: translateY(-3px);
+        }
+
+        .ability-item.selected {
+            border-color: #ffd700;
+            background: rgba(50, 50, 90, 0.9);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            animation: selectedPulse 1.5s infinite;
+        }
+
+        .ability-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .ability-desc {
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .name-input {
+            padding: 12px;
+            background: rgba(30, 30, 60, 0.7);
+            border: 2px solid #444488;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            margin: 10px 0;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #00eeff;
+            box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+            animation: inputGlow 1.5s infinite alternate;
+        }
+
+        .create-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background: linear-gradient(to bottom, #ffd700, #ffaa00);
+            color: #333;
+            margin-top: 10px;
+            animation: createPulse 2s infinite;
+        }
+
+        /* World Map */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231a1a3a"/><path d="M0,50 Q25,30 50,50 T100,50" stroke="%23333366" stroke-width="2" fill="none"/></svg>');
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            animation: mapAppear 1s ease-out;
+        }
+
+        .island {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px currentColor;
+            font-weight: bold;
+            text-align: center;
+            animation: islandFloat 6s ease-in-out infinite;
+        }
+
+        .island:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .island.fire {
+            background: radial-gradient(circle, #ff2a00, #8b0000);
+            top: 50px;
+            left: 100px;
+            color: #ff7b00;
+            animation-delay: 0s;
+        }
+
+        .island.ice {
+            background: radial-gradient(circle, #4ae3fc, #0066cc);
+            top: 50px;
+            right: 100px;
+            color: #ffffff;
+            animation-delay: 1.5s;
+        }
+
+        .island.earth {
+            background: radial-gradient(circle, #42b883, #228b22);
+            bottom: 100px;
+            left: 200px;
+            color: #8b4513;
+            animation-delay: 1s;
+        }
+
+        .island.lightning {
+            background: radial-gradient(circle, #00eeff, #0000ff);
+            bottom: 100px;
+            right: 200px;
+            color: #ffe600;
+            animation-delay: 0.5s;
+        }
+
+        .island-boss {
+            font-size: 12px;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .player-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            z-index: 5;
+            transition: all 1s ease;
+            box-shadow: 0 0 10px white;
+            animation: markerPulse 2s infinite;
+        }
+
+        .map-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* Battle Screen */
+        .battle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+            animation: battleAppear 0.5s ease-out;
+        }
+
+        .combatant {
+            text-align: center;
+            padding: 20px;
+            width: 250px;
+        }
+
+        .enemy-sprite, .player-sprite {
+            width: 120px;
+            height: 120px;
+            margin: 10px auto;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            box-shadow: 0 0 20px currentColor;
+            animation: combatantFloat 3s ease-in-out infinite;
+        }
+
+        .enemy-sprite {
+            background: radial-gradient(circle, #ff4444, #cc0000);
+            color: #ff7777;
+            animation-delay: 0.5s;
+        }
+
+        .player-sprite {
+            background: radial-gradient(circle, #4444ff, #0000cc);
+            color: #7777ff;
+        }
+
+        .health-bar, .mana-bar {
+            width: 100%;
+            height: 20px;
+            background: #333366;
+            margin: 10px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-fill, .mana-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .health-fill {
+            background: linear-gradient(to right, #ff4444, #ff0000);
+            animation: healthBarPulse 2s infinite;
+        }
+
+        .mana-fill {
+            background: linear-gradient(to right, #4444ff, #0000ff);
+            animation: manaBarPulse 2s infinite;
+        }
+
+        .battle-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        .battle-action-btn {
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .battle-log {
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            border-radius: 12px;
+            height: 150px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-top: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            animation: logEntryAppear 0.3s ease-out;
+        }
+
+        .log-entry.player {
+            color: #4444ff;
+        }
+
+        .log-entry.enemy {
+            color: #ff4444;
+        }
+
+        .log-entry.system {
+            color: #ffff00;
+            font-style: italic;
+        }
+
+        /* Inventory Screen */
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        .knight-select {
+            padding: 10px;
+            background: rgba(30, 30, 60, 0.7);
+            border: 2px solid #444488;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .knight-select:focus {
+            border-color: #00eeff;
+            box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+        }
+
+        .inventory-categories {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            animation: slideInDown 0.5s ease-out 0.1s forwards;
+            opacity: 0;
+        }
+
+        .category-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(30, 30, 60, 0.7);
+            border: 2px solid #444488;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn.active {
+            border-color: #00eeff;
+            background: rgba(40, 40, 100, 0.9);
+            box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+            animation: categoryPulse 2s infinite;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            animation: fadeIn 0.5s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .item-card {
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+            border: 2px solid transparent;
+            animation: itemAppear 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .item-card:nth-child(1) { animation-delay: 0.1s; }
+        .item-card:nth-child(2) { animation-delay: 0.2s; }
+        .item-card:nth-child(3) { animation-delay: 0.3s; }
+        .item-card:nth-child(4) { animation-delay: 0.4s; }
+        .item-card:nth-child(5) { animation-delay: 0.5s; }
+        .item-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .item-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .item-card.equipped {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            animation: equippedPulse 2s infinite;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .item-stats {
+            margin-bottom: 10px;
+            flex: 1;
+        }
+
+        .item-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .item-action {
+            margin-top: auto;
+        }
+
+        .empty-slot {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: #1a1a3a;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #00eeff, #0099cc);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            animation: progressPulse 2s infinite;
+        }
+
+        /* Animations */
+        @keyframes glow {
+            0% { text-shadow: 0 0 15px currentColor; }
+            100% { text-shadow: 0 0 25px currentColor, 0 0 35px currentColor; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        @keyframes cardAppear {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes itemAppear {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes firePulse {
+            0%, 100% { box-shadow: 0 0 5px #ff2a00; }
+            50% { box-shadow: 0 0 20px #ff2a00, 0 0 30px #ff2a00; }
+        }
+
+        @keyframes icePulse {
+            0%, 100% { box-shadow: 0 0 5px #4ae3fc; }
+            50% { box-shadow: 0 0 20px #4ae3fc, 0 0 30px #4ae3fc; }
+        }
+
+        @keyframes earthPulse {
+            0%, 100% { box-shadow: 0 0 5px #42b883; }
+            50% { box-shadow: 0 0 20px #42b883, 0 0 30px #42b883; }
+        }
+
+        @keyframes lightningPulse {
+            0%, 100% { box-shadow: 0 0 5px #00eeff; }
+            50% { box-shadow: 0 0 20px #00eeff, 0 0 30px #00eeff; }
+        }
+
+        @keyframes fireGlow {
+            0%, 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 5px #ff2a00; }
+            50% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 15px #ff2a00; }
+        }
+
+        @keyframes iceGlow {
+            0%, 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 5px #4ae3fc; }
+            50% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 15px #4ae3fc; }
+        }
+
+        @keyframes earthGlow {
+            0%, 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 5px #42b883; }
+            50% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 15px #42b883; }
+        }
+
+        @keyframes lightningGlow {
+            0%, 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 5px #00eeff; }
+            50% { box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 15px #00eeff; }
+        }
+
+        @keyframes healthPulse {
+            0%, 100% { box-shadow: 0 0 5px #ff4444; }
+            50% { box-shadow: 0 0 10px #ff4444; }
+        }
+
+        @keyframes manaPulse {
+            0%, 100% { box-shadow: 0 0 5px #4444ff; }
+            50% { box-shadow: 0 0 10px #4444ff; }
+        }
+
+        @keyframes selectedPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        }
+
+        @keyframes inputGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 238, 255, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(0, 238, 255, 0.8); }
+        }
+
+        @keyframes createPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 6px 8px rgba(0,0,0,0.4); }
+        }
+
+        @keyframes mapAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes islandFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes markerPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px white; }
+            50% { transform: scale(1.1); box-shadow: 0 0 15px white; }
+        }
+
+        @keyframes battleAppear {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes combatantFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes healthBarPulse {
+            0%, 100% { box-shadow: 0 0 5px #ff4444; }
+            50% { box-shadow: 0 0 10px #ff4444; }
+        }
+
+        @keyframes manaBarPulse {
+            0%, 100% { box-shadow: 0 0 5px #4444ff; }
+            50% { box-shadow: 0 0 10px #4444ff; }
+        }
+
+        @keyframes logEntryAppear {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes categoryPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 238, 255, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(0, 238, 255, 0.8); }
+        }
+
+        @keyframes equippedPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { box-shadow: 0 0 5px #00eeff; }
+            50% { box-shadow: 0 0 10px #00eeff; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        /* Damage Numbers */
+        .damage-number {
+            position: absolute;
+            font-weight: bold;
+            font-size: 18px;
+            pointer-events: none;
+            animation: damageFloat 1s ease-out forwards;
+        }
+
+        @keyframes damageFloat {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444488;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555599;
+        }
+
+        /* Level Up Effect */
+        .level-up {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 10%, rgba(255,215,0,0.3) 20%, transparent 30%);
+            animation: levelUpEffect 1.5s ease-out;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes levelUpEffect {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Main Menu Screen -->
+        <div id="main-menu" class="screen active">
+            <div class="title-container">
+                <h1 class="title-glow">ELEMENTAL KNIGHTS</h1>
+                <p>Forge your knights, master the elements, and conquer the islands!</p>
+            </div>
+            <div class="menu-buttons">
+                <button class="btn menu-btn" onclick="showScreen('roster-screen')">KNIGHT ROSTER</button>
+                <button class="btn menu-btn" onclick="showScreen('creation-screen')">CREATE KNIGHT</button>
+                <button class="btn menu-btn" onclick="showScreen('world-map-screen')">WORLD MAP</button>
+                <button class="btn menu-btn" onclick="showScreen('inventory-screen')">INVENTORY</button>
+            </div>
+        </div>
+
+        <!-- Roster Screen -->
+        <div id="roster-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <div class="header">
+                <h2>KNIGHT ROSTER</h2>
+                <p>Manage your elemental knights</p>
+            </div>
+            <div class="roster-container">
+                <div id="roster-grid" class="roster-grid">
+                    <!-- Knight cards will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Knight Creation Screen -->
+        <div id="creation-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <div class="header">
+                <h2>FORGE NEW KNIGHT</h2>
+                <p>Choose element, abilities, and name your knight</p>
+            </div>
+            <div class="creation-container">
+                <div class="knight-preview">
+                    <h3>KNIGHT PREVIEW</h3>
+                    <div id="knight-sprite" class="knight-sprite">
+                        ?
+                    </div>
+                    <div class="preview-stats">
+                        <div>Health</div>
+                        <div class="stat-bar">
+                            <div id="health-bar" class="stat-fill health" style="width: 100%"></div>
+                        </div>
+                        <div>Mana</div>
+                        <div class="stat-bar">
+                            <div id="mana-bar" class="stat-fill mana" style="width: 100%"></div>
+                        </div>
+                        <div id="preview-element">Element: None</div>
+                    </div>
+                </div>
+                <div class="creation-options">
+                    <h3>CHOOSE ELEMENT</h3>
+                    <div class="element-selector">
+                        <button class="btn btn-fire element-btn" onclick="selectElement('fire')">
+                            <span>🔥</span>
+                            <span>FIRE</span>
+                        </button>
+                        <button class="btn btn-ice element-btn" onclick="selectElement('ice')">
+                            <span>❄️</span>
+                            <span>ICE</span>
+                        </button>
+                        <button class="btn btn-earth element-btn" onclick="selectElement('earth')">
+                            <span>🌿</span>
+                            <span>EARTH</span>
+                        </button>
+                        <button class="btn btn-lightning element-btn" onclick="selectElement('lightning')">
+                            <span>⚡</span>
+                            <span>LIGHTNING</span>
+                        </button>
+                    </div>
+                    
+                    <h3>SELECT ABILITIES (Choose 3)</h3>
+                    <div id="abilities-container" class="abilities-container">
+                        <!-- Abilities will be generated here -->
+                    </div>
+                    
+                    <h3>NAME YOUR KNIGHT</h3>
+                    <input type="text" id="knight-name" class="name-input" placeholder="Enter knight name" maxlength="16">
+                    
+                    <button class="btn create-btn" onclick="createKnight()">FORGE KNIGHT!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- World Map Screen -->
+        <div id="world-map-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <div class="header">
+                <h2>ELEMENTAL ARCHIPELAGO</h2>
+                <p>Travel to islands and battle enemies</p>
+            </div>
+            <div class="map-container">
+                <div id="player-marker" class="player-marker"></div>
+                <div class="island fire pulse" onclick="travelToIsland('volcano')">
+                    <div>🔥</div>
+                    <div>VOLCANO ISLE</div>
+                    <div class="island-boss">BOSS: MAGMA TITAN</div>
+                </div>
+                <div class="island ice pulse" onclick="travelToIsland('glacier')">
+                    <div>❄️</div>
+                    <div>GLACIER PEAK</div>
+                    <div class="island-boss">BOSS: ICE DRAGON</div>
+                </div>
+                <div class="island earth pulse" onclick="travelToIsland('terra')">
+                    <div>🌿</div>
+                    <div>TERRA VAULT</div>
+                    <div class="island-boss">BOSS: STONE GUARDIAN</div>
+                </div>
+                <div class="island lightning pulse" onclick="travelToIsland('stormspire')">
+                    <div>⚡</div>
+                    <div>STORMPIRE ISLAND</div>
+                    <div class="island-boss">BOSS: LIGHTNING SORCERER</div>
+                </div>
+            </div>
+            <div class="map-actions">
+                <button class="btn" onclick="startRandomBattle()">EXPLORE CURRENT AREA</button>
+                <button class="btn" id="boss-battle-btn" disabled>CHALLENGE BOSS</button>
+            </div>
+            <div class="progress-container">
+                <div id="island-progress" class="progress-bar" style="width: 25%"></div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">Island Progress: <span id="progress-text">25%</span></div>
+        </div>
+
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="screen">
+            <div class="header">
+                <h2>BATTLE!</h2>
+                <p id="battle-location">Volcano Isle</p>
+            </div>
+            <div class="battle-container">
+                <div class="combatant">
+                    <h3 id="enemy-name">ENEMY</h3>
+                    <div class="enemy-sprite" id="enemy-sprite">?</div>
+                    <div>Health: <span id="enemy-health">100</span>/<span id="enemy-max-health">100</span></div>
+                    <div class="health-bar">
+                        <div id="enemy-health-bar" class="health-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="combatant">
+                    <h3 id="player-name">KNIGHT</h3>
+                    <div class="player-sprite" id="player-sprite">?</div>
+                    <div>Health: <span id="player-health">100</span>/<span id="player-max-health">100</span></div>
+                    <div class="health-bar">
+                        <div id="player-health-bar" class="health-fill" style="width: 100%;"></div>
+                    </div>
+                    <div>Mana: <span id="player-mana">50</span>/<span id="player-max-mana">50</span></div>
+                    <div class="mana-bar">
+                        <div id="player-mana-bar" class="mana-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="battle-actions">
+                <button class="btn battle-action-btn" onclick="playerAttack()">ATTACK</button>
+                <button class="btn battle-action-btn" onclick="useAbility(0)">ABILITY 1</button>
+                <button class="btn battle-action-btn" onclick="useAbility(1)">ABILITY 2</button>
+                <button class="btn battle-action-btn" onclick="useAbility(2)">ABILITY 3</button>
+                <button class="btn battle-action-btn" onclick="useItem()">USE ITEM</button>
+                <button class="btn battle-action-btn" onclick="fleeBattle()">FLEE</button>
+            </div>
+            
+            <div class="battle-log" id="battle-log">
+                <!-- Battle messages will appear here -->
+            </div>
+        </div>
+
+        <!-- Inventory Screen -->
+        <div id="inventory-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <div class="header">
+                <h2>INVENTORY</h2>
+                <p>Manage equipment and items</p>
+            </div>
+            <div class="inventory-header">
+                <select id="knight-select" class="knight-select" onchange="updateInventoryDisplay()">
+                    <option value="">Select a Knight</option>
+                </select>
+                <div>Gold: <span id="gold-amount">100</span></div>
+            </div>
+            <div class="inventory-categories">
+                <button class="category-btn active" onclick="switchInventoryTab('weapons')">WEAPONS</button>
+                <button class="category-btn" onclick="switchInventoryTab('armor')">ARMOR</button>
+                <button class="category-btn" onclick="switchInventoryTab('items')">ITEMS</button>
+            </div>
+            <div id="inventory-grid" class="inventory-grid">
+                <!-- Inventory items will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Game State with Progressive Levels
+        const gameState = {
+            knights: [],
+            currentKnight: null,
+            currentIsland: 'volcano',
+            gold: 100,
+            playerLevel: 1,
+            totalIslands: 4,
+            completedIslands: 1,
+            inventory: {
+                weapons: [
+                    { id: 1, name: 'Basic Sword', type: 'weapon', rarity: 'common', equipped: false, stats: { attack: 5 } },
+                    { id: 2, name: 'Flame Blade', type: 'weapon', element: 'fire', rarity: 'rare', equipped: false, stats: { attack: 8, fireDamage: 3 } },
+                    { id: 3, name: 'Ice Sword', type: 'weapon', element: 'ice', rarity: 'rare', equipped: false, stats: { attack: 7, iceDamage: 3 } },
+                    { id: 4, name: 'Earth Hammer', type: 'weapon', element: 'earth', rarity: 'rare', equipped: false, stats: { attack: 9, earthDamage: 2 } },
+                    { id: 5, name: 'Lightning Spear', type: 'weapon', element: 'lightning', rarity: 'rare', equipped: false, stats: { attack: 6, lightningDamage: 4 } }
+                ],
+                armor: [
+                    { id: 1, name: 'Leather Armor', type: 'armor', rarity: 'common', equipped: false, stats: { defense: 3 } },
+                    { id: 2, name: 'Plate Mail', type: 'armor', rarity: 'uncommon', equipped: false, stats: { defense: 6 } },
+                    { id: 3, name: 'Fire Robes', type: 'armor', element: 'fire', rarity: 'rare', equipped: false, stats: { defense: 4, fireResistance: 10 } },
+                    { id: 4, name: 'Ice Armor', type: 'armor', element: 'ice', rarity: 'rare', equipped: false, stats: { defense: 5, iceResistance: 10 } }
+                ],
+                items: [
+                    { id: 1, name: 'Health Potion', type: 'item', rarity: 'common', quantity: 3, effect: 'restoreHealth', value: 30 },
+                    { id: 2, name: 'Mana Potion', type: 'item', rarity: 'common', quantity: 2, effect: 'restoreMana', value: 25 },
+                    { id: 3, name: 'Revival Herb', type: 'item', rarity: 'uncommon', quantity: 1, effect: 'revive', value: 100 },
+                    { id: 4, name: 'Strength Elixir', type: 'item', rarity: 'rare', quantity: 1, effect: 'boostAttack', value: 5, duration: 3 }
+                ]
+            },
+            battle: {
+                active: false,
+                enemy: null,
+                player: null,
+                isBoss: false
+            },
+            islands: {
+                volcano: { visited: true, completed: false, level: 1 },
+                glacier: { visited: false, completed: false, level: 3 },
+                terra: { visited: false, completed: false, level: 5 },
+                stormspire: { visited: false, completed: false, level: 7 }
+            }
+        };
+
+        // Enhanced Element Data
+        const elements = {
+            fire: {
+                name: 'Fire',
+                color: '#FF2A00',
+                abilities: [
+                    { name: 'Flame Slash', description: 'Deals fire damage to one enemy', cost: 10, damage: 15, effect: 'burn' },
+                    { name: 'Ember Burst', description: 'Hits all enemies with fire damage', cost: 20, damage: 10, aoe: true },
+                    { name: 'Fire Wall', description: 'Creates a barrier that damages attackers', cost: 15, effect: 'reflect' },
+                    { name: 'Meteor Call', description: 'Summons a meteor for massive damage', cost: 30, damage: 25, cooldown: 3 }
+                ]
+            },
+            ice: {
+                name: 'Ice', 
+                color: '#4AE3FC',
+                abilities: [
+                    { name: 'Frost Strike', description: 'Deals ice damage and may freeze', cost: 10, damage: 12, effect: 'freeze' },
+                    { name: 'Ice Shield', description: 'Increases defense for 3 turns', cost: 15, effect: 'defenseUp' },
+                    { name: 'Blizzard', description: 'Hits all enemies with ice damage', cost: 25, damage: 8, aoe: true },
+                    { name: 'Freeze', description: 'Chance to freeze enemy for 1 turn', cost: 20, effect: 'freeze' }
+                ]
+            },
+            earth: {
+                name: 'Earth',
+                color: '#42B883',
+                abilities: [
+                    { name: 'Stone Fist', description: 'Deals heavy earth damage', cost: 12, damage: 18 },
+                    { name: 'Root Trap', description: 'Roots enemy in place', cost: 15, effect: 'root' },
+                    { name: 'Quake', description: 'Damages all enemies', cost: 22, damage: 12, aoe: true },
+                    { name: 'Boulder Toss', description: 'Throws a boulder for high damage', cost: 18, damage: 20 }
+                ]
+            },
+            lightning: {
+                name: 'Lightning',
+                color: '#00EEFF',
+                abilities: [
+                    { name: 'Spark Strike', description: 'Quick lightning attack', cost: 8, damage: 10 },
+                    { name: 'Chain Lightning', description: 'Jumps between enemies', cost: 18, damage: 12, aoe: true },
+                    { name: 'Speed Boost', description: 'Increases speed for 3 turns', cost: 12, effect: 'speedUp' },
+                    { name: 'Thunder Crash', description: 'Massive lightning damage to one target', cost: 25, damage: 30 }
+                ]
+            }
+        };
+
+        // Enhanced Enemy Data with Progressive Difficulty
+        const enemies = {
+            volcano: [
+                { name: 'Lava Slime', health: 30, maxHealth: 30, attack: 5, defense: 2, element: 'fire', sprite: '🔥', level: 1 },
+                { name: 'Fire Imp', health: 25, maxHealth: 25, attack: 8, defense: 1, element: 'fire', sprite: '👺', level: 2 }
+            ],
+            glacier: [
+                { name: 'Ice Wisp', health: 35, maxHealth: 35, attack: 7, defense: 3, element: 'ice', sprite: '❄️', level: 3 },
+                { name: 'Frost Wolf', health: 40, maxHealth: 40, attack: 9, defense: 4, element: 'ice', sprite: '🐺', level: 4 }
+            ],
+            terra: [
+                { name: 'Rock Golem', health: 60, maxHealth: 60, attack: 12, defense: 8, element: 'earth', sprite: '🗿', level: 5 },
+                { name: 'Earth Worm', health: 50, maxHealth: 50, attack: 8, defense: 6, element: 'earth', sprite: '🐛', level: 6 }
+            ],
+            stormspire: [
+                { name: 'Storm Bat', health: 45, maxHealth: 45, attack: 15, defense: 3, element: 'lightning', sprite: '🦇', level: 7 },
+                { name: 'Tempest Spirit', health: 55, maxHealth: 55, attack: 18, defense: 4, element: 'lightning', sprite: '👻', level: 8 }
+            ],
+            bosses: {
+                volcano: { name: 'Magma Titan', health: 100, maxHealth: 100, attack: 15, defense: 10, element: 'fire', sprite: '👹', level: 3 },
+                glacier: { name: 'Ice Dragon', health: 150, maxHealth: 150, attack: 20, defense: 12, element: 'ice', sprite: '🐉', level: 6 },
+                terra: { name: 'Stone Guardian', health: 200, maxHealth: 200, attack: 18, defense: 18, element: 'earth', sprite: '🛡️', level: 9 },
+                stormspire: { name: 'Lightning Sorcerer', health: 120, maxHealth: 120, attack: 30, defense: 8, element: 'lightning', sprite: '🧙', level: 12 }
+            }
+        };
+
+        // Screen Management with Transitions
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            setTimeout(() => {
+                document.getElementById(screenId).classList.add('active');
+            }, 300);
+            
+            if (screenId === 'roster-screen') {
+                updateRosterDisplay();
+            } else if (screenId === 'inventory-screen') {
+                updateKnightSelect();
+                updateInventoryDisplay();
+            } else if (screenId === 'world-map-screen') {
+                updatePlayerMarker();
+                updateBossButton();
+                updateIslandProgress();
+            }
+        }
+
+        // Knight Creation
+        let selectedElement = null;
+        let selectedAbilities = [];
+
+        function selectElement(element) {
+            selectedElement = element;
+            const elementData = elements[element];
+            
+            // Update preview with animation
+            const sprite = document.getElementById('knight-sprite');
+            sprite.style.animation = 'none';
+            setTimeout(() => {
+                sprite.className = `knight-sprite ${element}`;
+                sprite.textContent = getElementEmoji(element);
+                sprite.style.animation = 'float 4s ease-in-out infinite';
+            }, 10);
+            
+            document.getElementById('preview-element').textContent = `Element: ${elementData.name}`;
+            
+            // Update abilities list with animation
+            const abilitiesContainer = document.getElementById('abilities-container');
+            abilitiesContainer.innerHTML = '';
+            selectedAbilities = [];
+            
+            elementData.abilities.forEach((ability, index) => {
+                const abilityElement = document.createElement('div');
+                abilityElement.className = 'ability-item';
+                abilityElement.innerHTML = `
+                    <div class="ability-name">${ability.name}</div>
+                    <div class="ability-desc">${ability.description}</div>
+                    <div class="ability-cost">Cost: ${ability.cost} MP</div>
+                `;
+                abilityElement.onclick = () => toggleAbility(index, abilityElement);
+                abilitiesContainer.appendChild(abilityElement);
+            });
+        }
+
+        function getElementEmoji(element) {
+            const emojis = {
+                fire: '🔥',
+                ice: '❄️',
+                earth: '🌿',
+                lightning: '⚡'
+            };
+            return emojis[element];
+        }
+
+        function toggleAbility(index, element) {
+            const abilityIndex = selectedAbilities.indexOf(index);
+            
+            if (abilityIndex === -1) {
+                if (selectedAbilities.length < 3) {
+                    selectedAbilities.push(index);
+                    element.classList.add('selected');
+                    
+                    // Add selection animation
+                    element.style.animation = 'selectedPulse 1.5s infinite';
+                } else {
+                    alert('You can only select 3 abilities!');
+                }
+            } else {
+                selectedAbilities.splice(abilityIndex, 1);
+                element.classList.remove('selected');
+                element.style.animation = '';
+            }
+        }
+
+        function createKnight() {
+            const name = document.getElementById('knight-name').value.trim();
+            
+            if (!name) {
+                alert('Please enter a name for your knight!');
+                return;
+            }
+            
+            if (!selectedElement) {
+                alert('Please select an element for your knight!');
+                return;
+            }
+            
+            if (selectedAbilities.length !== 3) {
+                alert('Please select exactly 3 abilities!');
+                return;
+            }
+            
+            const elementData = elements[selectedElement];
+            const knight = {
+                id: gameState.knights.length + 1,
+                name: name,
+                element: selectedElement,
+                level: 1,
+                health: 100,
+                maxHealth: 100,
+                mana: 50,
+                maxMana: 50,
+                attack: 10,
+                defense: 5,
+                speed: 10,
+                experience: 0,
+                expToNextLevel: 100,
+                abilities: selectedAbilities.map(index => elementData.abilities[index]),
+                equippedWeapon: null,
+                equippedArmor: null,
+                sprite: getElementEmoji(selectedElement)
+            };
+            
+            gameState.knights.push(knight);
+            
+            // Reset creation form
+            document.getElementById('knight-name').value = '';
+            selectedElement = null;
+            selectedAbilities = [];
+            document.getElementById('knight-sprite').className = 'knight-sprite';
+            document.getElementById('knight-sprite').textContent = '?';
+            document.getElementById('preview-element').textContent = 'Element: None';
+            document.getElementById('abilities-container').innerHTML = '';
+            
+            // Show creation animation
+            const creationEffect = document.createElement('div');
+            creationEffect.className = 'level-up';
+            document.body.appendChild(creationEffect);
+            setTimeout(() => {
+                document.body.removeChild(creationEffect);
+            }, 1500);
+            
+            setTimeout(() => {
+                alert(`Knight ${name} has been forged!`);
+                showScreen('roster-screen');
+            }, 500);
+        }
+
+        // Roster Management
+        function updateRosterDisplay() {
+            const rosterGrid = document.getElementById('roster-grid');
+            rosterGrid.innerHTML = '';
+            
+            gameState.knights.forEach((knight, index) => {
+                const knightCard = document.createElement('div');
+                knightCard.className = `knight-card ${knight.element}`;
+                knightCard.style.animationDelay = `${index * 0.1}s`;
+                knightCard.innerHTML = `
+                    <div class="knight-header">
+                        <div class="knight-name">${knight.name}</div>
+                        <div class="knight-level">Lvl ${knight.level}</div>
+                    </div>
+                    <div class="knight-stats">
+                        <div class="stat">
+                            <span>Health:</span>
+                            <span>${knight.health}/${knight.maxHealth}</span>
+                        </div>
+                        <div class="stat">
+                            <span>Mana:</span>
+                            <span>${knight.mana}/${knight.maxMana}</span>
+                        </div>
+                        <div class="stat">
+                            <span>Attack:</span>
+                            <span>${knight.attack}</span>
+                        </div>
+                        <div class="stat">
+                            <span>Defense:</span>
+                            <span>${knight.defense}</span>
+                        </div>
+                    </div>
+                    <div class="knight-abilities">
+                        ${knight.abilities.map(ability => 
+                            `<span class="ability-tag">${ability.name}</span>`
+                        ).join('')}
+                    </div>
+                    <div class="knight-actions">
+                        <button class="btn knight-action-btn" onclick="selectKnight(${knight.id})">SELECT</button>
+                        <button class="btn knight-action-btn" onclick="viewKnightProfile(${knight.id})">PROFILE</button>
+                    </div>
+                `;
+                rosterGrid.appendChild(knightCard);
+            });
+            
+            // Add empty slots
+            const emptySlots = 4 - gameState.knights.length;
+            for (let i = 0; i < emptySlots; i++) {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'knight-card';
+                emptyCard.style.animationDelay = `${(gameState.knights.length + i) * 0.1}s`;
+                emptyCard.innerHTML = `
+                    <div class="empty-slot">
+                        <div>Empty Knight Slot</div>
+                        <button class="btn" onclick="showScreen('creation-screen')" style="margin-top: 10px;">CREATE KNIGHT</button>
+                    </div>
+                `;
+                rosterGrid.appendChild(emptyCard);
+            }
+        }
+
+        function selectKnight(knightId) {
+            gameState.currentKnight = gameState.knights.find(k => k.id === knightId);
+            
+            // Selection animation
+            const selectedCard = document.querySelector(`.knight-card .knight-action-btn[onclick="selectKnight(${knightId})"]`);
+            if (selectedCard) {
+                selectedCard.parentElement.parentElement.classList.add('shake');
+                setTimeout(() => {
+                    selectedCard.parentElement.parentElement.classList.remove('shake');
+                }, 500);
+            }
+            
+            setTimeout(() => {
+                alert(`${gameState.currentKnight.name} is now your active knight!`);
+                showScreen('main-menu');
+            }, 300);
+        }
+
+        function viewKnightProfile(knightId) {
+            const knight = gameState.knights.find(k => k.id === knightId);
+            let profileText = `KNIGHT PROFILE:\n\n`;
+            profileText += `Name: ${knight.name}\n`;
+            profileText += `Element: ${elements[knight.element].name}\n`;
+            profileText += `Level: ${knight.level}\n`;
+            profileText += `Health: ${knight.health}/${knight.maxHealth}\n`;
+            profileText += `Mana: ${knight.mana}/${knight.maxMana}\n`;
+            profileText += `Attack: ${knight.attack}\n`;
+            profileText += `Defense: ${knight.defense}\n`;
+            profileText += `Experience: ${knight.experience}/${knight.expToNextLevel}\n\n`;
+            profileText += `Abilities:\n`;
+            knight.abilities.forEach(ability => {
+                profileText += `- ${ability.name}: ${ability.description} (${ability.cost} MP)\n`;
+            });
+            
+            alert(profileText);
+        }
+
+        // World Map & Travel
+        function updatePlayerMarker() {
+            const marker = document.getElementById('player-marker');
+            const islandPositions = {
+                volcano: { top: '80px', left: '130px' },
+                glacier: { top: '80px', left: '550px' },
+                terra: { top: '250px', left: '250px' },
+                stormspire: { top: '250px', left: '450px' }
+            };
+            
+            const pos = islandPositions[gameState.currentIsland];
+            if (pos) {
+                marker.style.top = pos.top;
+                marker.style.left = pos.left;
+            }
+        }
+
+        function updateBossButton() {
+            const bossBtn = document.getElementById('boss-battle-btn');
+            const island = gameState.islands[gameState.currentIsland];
+            
+            if (island.visited && !island.completed) {
+                bossBtn.disabled = false;
+                bossBtn.textContent = 'CHALLENGE BOSS';
+                bossBtn.classList.add('pulse');
+            } else if (island.completed) {
+                bossBtn.disabled = true;
+                bossBtn.textContent = 'BOSS DEFEATED';
+                bossBtn.classList.remove('pulse');
+            } else {
+                bossBtn.disabled = true;
+                bossBtn.textContent = 'EXPLORE FIRST';
+                bossBtn.classList.remove('pulse');
+            }
+        }
+
+        function updateIslandProgress() {
+            const completed = Object.values(gameState.islands).filter(island => island.completed).length;
+            const progress = (completed / gameState.totalIslands) * 100;
+            
+            document.getElementById('island-progress').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${Math.round(progress)}%`;
+        }
+
+        function travelToIsland(island) {
+            // Check if player is high enough level
+            if (gameState.currentKnight && gameState.currentKnight.level < gameState.islands[island].level) {
+                alert(`You need to be at least level ${gameState.islands[island].level} to travel to this island!`);
+                return;
+            }
+            
+            gameState.currentIsland = island;
+            gameState.islands[island].visited = true;
+            updatePlayerMarker();
+            updateBossButton();
+            updateIslandProgress();
+            
+            const islandNames = {
+                volcano: 'Volcano Isle',
+                glacier: 'Glacier Peak', 
+                terra: 'Terra Vault',
+                stormspire: 'Stormspire Island'
+            };
+            
+            // Travel animation
+            const marker = document.getElementById('player-marker');
+            marker.classList.add('pulse');
+            setTimeout(() => {
+                marker.classList.remove('pulse');
+                alert(`Traveling to ${islandNames[island]}!`);
+            }, 1000);
+        }
+
+        // Battle System with Enhanced Animations
+        function startRandomBattle() {
+            if (!gameState.currentKnight) {
+                alert('Please select a knight first!');
+                return;
+            }
+            
+            const islandEnemies = enemies[gameState.currentIsland];
+            const randomEnemy = {...islandEnemies[Math.floor(Math.random() * islandEnemies.length)]};
+            
+            startBattle(randomEnemy, false);
+        }
+
+        function startBossBattle() {
+            if (!gameState.currentKnight) {
+                alert('Please select a knight first!');
+                return;
+            }
+            
+            const boss = {...enemies.bosses[gameState.currentIsland]};
+            startBattle(boss, true);
+        }
+
+        function startBattle(enemy, isBoss) {
+            gameState.battle = {
+                active: true,
+                enemy: enemy,
+                player: {...gameState.currentKnight},
+                isBoss: isBoss,
+                turn: 'player'
+            };
+            
+            // Setup battle UI
+            document.getElementById('enemy-name').textContent = enemy.name;
+            document.getElementById('player-name').textContent = gameState.battle.player.name;
+            document.getElementById('battle-location').textContent = `${getIslandName(gameState.currentIsland)} - ${isBoss ? 'BOSS BATTLE' : 'Random Encounter'}`;
+            
+            // Set sprites
+            document.getElementById('enemy-sprite').textContent = enemy.sprite;
+            document.getElementById('player-sprite').textContent = gameState.battle.player.sprite;
+            document.getElementById('player-sprite').className = `player-sprite ${gameState.battle.player.element}`;
+            
+            updateBattleUI();
+            
+            showScreen('battle-screen');
+            addToBattleLog(`A wild ${enemy.name} appears!`, 'system');
+            
+            if (isBoss) {
+                addToBattleLog(`This is a BOSS battle! Be careful!`, 'system');
+                
+                // Boss entrance animation
+                const enemySprite = document.getElementById('enemy-sprite');
+                enemySprite.classList.add('shake');
+                setTimeout(() => {
+                    enemySprite.classList.remove('shake');
+                }, 1000);
+            }
+        }
+
+        function getIslandName(island) {
+            const names = {
+                volcano: 'Volcano Isle',
+                glacier: 'Glacier Peak', 
+                terra: 'Terra Vault',
+                stormspire: 'Stormspire Island'
+            };
+            return names[island];
+        }
+
+        function updateBattleUI() {
+            const enemy = gameState.battle.enemy;
+            const player = gameState.battle.player;
+            
+            // Update health bars
+            document.getElementById('enemy-health').textContent = enemy.health;
+            document.getElementById('enemy-max-health').textContent = enemy.maxHealth;
+            document.getElementById('enemy-health-bar').style.width = `${(enemy.health / enemy.maxHealth) * 100}%`;
+            
+            document.getElementById('player-health').textContent = player.health;
+            document.getElementById('player-max-health').textContent = player.maxHealth;
+            document.getElementById('player-health-bar').style.width = `${(player.health / player.maxHealth) * 100}%`;
+            
+            document.getElementById('player-mana').textContent = player.mana;
+            document.getElementById('player-max-mana').textContent = player.maxMana;
+            document.getElementById('player-mana-bar').style.width = `${(player.mana / player.maxMana) * 100}%`;
+        }
+
+        function addToBattleLog(message, type = 'system') {
+            const log = document.getElementById('battle-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function playerAttack() {
+            if (!gameState.battle.active || gameState.battle.turn !== 'player') return;
+            
+            const player = gameState.battle.player;
+            const enemy = gameState.battle.enemy;
+            
+            const damage = calculateDamage(player, enemy, false);
+            enemy.health -= damage;
+            
+            // Damage animation
+            showDamageNumber(enemy.sprite, damage, 'enemy');
+            
+            addToBattleLog(`${player.name} attacks for ${damage} damage!`, 'player');
+            
+            if (enemy.health <= 0) {
+                enemy.health = 0;
+                endBattle(true);
+                return;
+            }
+            
+            updateBattleUI();
+            gameState.battle.turn = 'enemy';
+            setTimeout(enemyTurn, 1500);
+        }
+
+        function useAbility(abilityIndex) {
+            if (!gameState.battle.active || gameState.battle.turn !== 'player') return;
+            
+            const player = gameState.battle.player;
+            const enemy = gameState.battle.enemy;
+            const ability = player.abilities[abilityIndex];
+            
+            if (!ability) {
+                addToBattleLog('No ability in that slot!', 'system');
+                return;
+            }
+            
+            if (player.mana < ability.cost) {
+                addToBattleLog('Not enough mana!', 'system');
+                return;
+            }
+            
+            player.mana -= ability.cost;
+            let damage = 0;
+            
+            if (ability.damage) {
+                damage = calculateDamage(player, enemy, true, ability);
+                enemy.health -= damage;
+                
+                // Ability animation
+                showDamageNumber(enemy.sprite, damage, 'enemy', true);
+                
+                addToBattleLog(`${player.name} uses ${ability.name} for ${damage} damage!`, 'player');
+            } else {
+                addToBattleLog(`${player.name} uses ${ability.name}!`, 'player');
+                // Handle non-damage abilities here
+            }
+            
+            if (enemy.health <= 0) {
+                enemy.health = 0;
+                endBattle(true);
+                return;
+            }
+            
+            updateBattleUI();
+            gameState.battle.turn = 'enemy';
+            setTimeout(enemyTurn, 1500);
+        }
+
+        function showDamageNumber(target, damage, type, isAbility = false) {
+            const battleContainer = document.querySelector('.battle-container');
+            const damageNumber = document.createElement('div');
+            damageNumber.className = 'damage-number';
+            damageNumber.textContent = `-${damage}`;
+            damageNumber.style.color = isAbility ? '#ffd700' : (type === 'enemy' ? '#ff4444' : '#4444ff');
+            
+            // Position based on target
+            if (type === 'enemy') {
+                damageNumber.style.left = '60%';
+                damageNumber.style.top = '40%';
+            } else {
+                damageNumber.style.left = '40%';
+                damageNumber.style.top = '40%';
+            }
+            
+            battleContainer.appendChild(damageNumber);
+            
+            // Remove after animation
+            setTimeout(() => {
+                battleContainer.removeChild(damageNumber);
+            }, 1000);
+        }
+
+        function calculateDamage(attacker, defender, isAbility = false, ability = null) {
+            let baseDamage = isAbility && ability ? ability.damage : attacker.attack;
+            let defense = defender.defense;
+            
+            // Elemental strengths/weaknesses
+            const effectiveness = getEffectiveness(attacker.element, defender.element);
+            baseDamage *= effectiveness;
+            
+            // Level scaling
+            const levelBonus = attacker.level * 0.5;
+            baseDamage += levelBonus;
+            
+            // Random variance
+            const variance = 0.8 + Math.random() * 0.4;
+            let damage = Math.max(1, Math.floor((baseDamage - defense/2) * variance));
+            
+            return damage;
+        }
+
+        function getEffectiveness(attackerElement, defenderElement) {
+            const strengths = {
+                fire: 'ice',
+                ice: 'earth',
+                earth: 'lightning',
+                lightning: 'fire'
+            };
+            
+            if (strengths[attackerElement] === defenderElement) {
+                return 1.5; // Super effective
+            } else if (strengths[defenderElement] === attackerElement) {
+                return 0.5; // Not very effective
+            }
+            
+            return 1.0; // Normal effectiveness
+        }
+
+        function enemyTurn() {
+            if (!gameState.battle.active || gameState.battle.turn !== 'enemy') return;
+            
+            const player = gameState.battle.player;
+            const enemy = gameState.battle.enemy;
+            
+            const damage = calculateDamage(enemy, player, false);
+            player.health -= damage;
+            
+            // Damage animation
+            showDamageNumber(player.sprite, damage, 'player');
+            
+            addToBattleLog(`${enemy.name} attacks for ${damage} damage!`, 'enemy');
+            
+            if (player.health <= 0) {
+                player.health = 0;
+                endBattle(false);
+                return;
+            }
+            
+            updateBattleUI();
+            gameState.battle.turn = 'player';
+        }
+
+        function useItem() {
+            // Simple health potion implementation
+            const potion = gameState.inventory.items.find(item => item.name === 'Health Potion');
+            if (potion && potion.quantity > 0 && gameState.battle.turn === 'player') {
+                const player = gameState.battle.player;
+                const healAmount = 30;
+                player.health = Math.min(
+                    player.maxHealth,
+                    player.health + healAmount
+                );
+                potion.quantity--;
+                
+                // Heal animation
+                showDamageNumber(player.sprite, `+${healAmount}`, 'player');
+                
+                addToBattleLog('Used Health Potion! Restored 30 health.', 'player');
+                updateBattleUI();
+                gameState.battle.turn = 'enemy';
+                setTimeout(enemyTurn, 1500);
+            } else {
+                addToBattleLog('No Health Potions available or not your turn!', 'system');
+            }
+        }
+
+        function fleeBattle() {
+            if (gameState.battle.isBoss) {
+                addToBattleLog('You cannot flee from a boss battle!', 'system');
+                return;
+            }
+            
+            addToBattleLog('You fled from battle!', 'system');
+            setTimeout(() => showScreen('world-map-screen'), 1000);
+        }
+
+        function endBattle(victory) {
+            if (victory) {
+                addToBattleLog('Victory! You defeated the enemy!', 'system');
+                
+                if (gameState.currentKnight) {
+                    const player = gameState.battle.player;
+                    const enemy = gameState.battle.enemy;
+                    
+                    // Grant experience
+                    let expGained = enemy.maxHealth / 2;
+                    if (gameState.battle.isBoss) expGained *= 5;
+                    
+                    gameState.currentKnight.experience += expGained;
+                    addToBattleLog(`Gained ${expGained} experience!`, 'system');
+                    
+                    // Check for level up
+                    let leveledUp = false;
+                    while (gameState.currentKnight.experience >= gameState.currentKnight.expToNextLevel) {
+                        gameState.currentKnight.experience -= gameState.currentKnight.expToNextLevel;
+                        gameState.currentKnight.level++;
+                        gameState.currentKnight.maxHealth += 10;
+                        gameState.currentKnight.health = gameState.currentKnight.maxHealth;
+                        gameState.currentKnight.maxMana += 5;
+                        gameState.currentKnight.mana = gameState.currentKnight.maxMana;
+                        gameState.currentKnight.attack += 2;
+                        gameState.currentKnight.defense += 1;
+                        gameState.currentKnight.expToNextLevel = Math.floor(gameState.currentKnight.expToNextLevel * 1.5);
+                        
+                        addToBattleLog(`Level up! ${gameState.currentKnight.name} is now level ${gameState.currentKnight.level}!`, 'system');
+                        leveledUp = true;
+                    }
+                    
+                    // Level up animation
+                    if (leveledUp) {
+                        const levelUpEffect = document.createElement('div');
+                        levelUpEffect.className = 'level-up';
+                        document.getElementById('battle-screen').appendChild(levelUpEffect);
+                        setTimeout(() => {
+                            document.getElementById('battle-screen').removeChild(levelUpEffect);
+                        }, 1500);
+                    }
+                    
+                    // Grant gold
+                    let goldGained = 10 + Math.floor(enemy.maxHealth / 5);
+                    if (gameState.battle.isBoss) goldGained *= 10;
+                    gameState.gold += goldGained;
+                    addToBattleLog(`Found ${goldGained} gold!`, 'system');
+                    
+                    // Add random loot for boss battles
+                    if (gameState.battle.isBoss) {
+                        gameState.islands[gameState.currentIsland].completed = true;
+                        const rareWeapon = gameState.inventory.weapons.find(w => w.rarity === 'rare' && !w.equipped);
+                        if (rareWeapon) {
+                            addToBattleLog(`The boss dropped ${rareWeapon.name}!`, 'system');
+                        }
+                    }
+                }
+            } else {
+                addToBattleLog('You were defeated...', 'system');
+                // Penalty for losing
+                gameState.gold = Math.max(0, gameState.gold - 20);
+            }
+            
+            gameState.battle.active = false;
+            setTimeout(() => {
+                showScreen('world-map-screen');
+                updateIslandProgress();
+            }, 3000);
+        }
+
+        // Inventory Management
+        function updateKnightSelect() {
+            const select = document.getElementById('knight-select');
+            select.innerHTML = '<option value="">Select a Knight</option>';
+            
+            gameState.knights.forEach(knight => {
+                const option = document.createElement('option');
+                option.value = knight.id;
+                option.textContent = knight.name;
+                if (knight.id === (gameState.currentKnight ? gameState.currentKnight.id : -1)) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            document.getElementById('gold-amount').textContent = gameState.gold;
+        }
+
+        let currentInventoryTab = 'weapons';
+
+        function switchInventoryTab(tab) {
+            currentInventoryTab = tab;
+            
+            // Update active tab button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateInventoryDisplay();
+        }
+
+        function updateInventoryDisplay() {
+            const knightId = document.getElementById('knight-select').value;
+            const knight = gameState.knights.find(k => k.id === parseInt(knightId));
+            
+            const inventoryGrid = document.getElementById('inventory-grid');
+            inventoryGrid.innerHTML = '';
+            
+            let items = [];
+            if (currentInventoryTab === 'weapons') {
+                items = gameState.inventory.weapons;
+            } else if (currentInventoryTab === 'armor') {
+                items = gameState.inventory.armor;
+            } else if (currentInventoryTab === 'items') {
+                items = gameState.inventory.items.filter(item => item.quantity > 0);
+            }
+            
+            if (items.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-slot';
+                emptyMessage.textContent = 'No items in this category';
+                inventoryGrid.appendChild(emptyMessage);
+                return;
+            }
+            
+            items.forEach((item, index) => {
+                const itemCard = document.createElement('div');
+                itemCard.className = `item-card ${item.equipped ? 'equipped' : ''}`;
+                itemCard.style.animationDelay = `${index * 0.1}s`;
+                
+                let statsHTML = '';
+                if (item.stats) {
+                    for (const [stat, value] of Object.entries(item.stats)) {
+                        statsHTML += `<div class="item-stat"><span>${stat}:</span><span>+${value}</span></div>`;
+                    }
+                }
+                
+                let actionHTML = '';
+                if (item.type === 'weapon' || item.type === 'armor') {
+                    actionHTML = `<button class="btn item-action" onclick="equipItem('${item.type}', ${item.id})">${item.equipped ? 'UNEQUIP' : 'EQUIP'}</button>`;
+                } else if (item.type === 'item') {
+                    actionHTML = `<button class="btn item-action" onclick="useInventoryItem(${item.id})">USE</button>`;
+                }
+                
+                itemCard.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-stats">${statsHTML}</div>
+                    ${item.rarity ? `<div>Rarity: ${item.rarity}</div>` : ''}
+                    ${item.quantity ? `<div>Quantity: ${item.quantity}</div>` : ''}
+                    ${actionHTML}
+                `;
+                inventoryGrid.appendChild(itemCard);
+            });
+        }
+
+        function equipItem(type, itemId) {
+            if (!gameState.currentKnight) {
+                alert('Please select a knight first!');
+                return;
+            }
+            
+            const items = gameState.inventory[type + 's'];
+            const item = items.find(i => i.id === itemId);
+            
+            // Unequip currently equipped item of same type
+            items.forEach(i => {
+                if (i.equipped) {
+                    i.equipped = false;
+                    // Remove item stats from knight
+                    if (type === 'weapon') {
+                        gameState.currentKnight.attack -= i.stats.attack;
+                        gameState.currentKnight.equippedWeapon = null;
+                    } else if (type === 'armor') {
+                        gameState.currentKnight.defense -= i.stats.defense;
+                        gameState.currentKnight.equippedArmor = null;
+                    }
+                }
+            });
+            
+            // Equip new item
+            item.equipped = true;
+            
+            // Apply item stats to knight
+            if (type === 'weapon') {
+                gameState.currentKnight.attack += item.stats.attack;
+                gameState.currentKnight.equippedWeapon = item;
+            } else if (type === 'armor') {
+                gameState.currentKnight.defense += item.stats.defense;
+                gameState.currentKnight.equippedArmor = item;
+            }
+            
+            // Equip animation
+            const itemCard = document.querySelector(`.item-card .item-action[onclick="equipItem('${type}', ${itemId})"]`);
+            if (itemCard) {
+                itemCard.parentElement.classList.add('shake');
+                setTimeout(() => {
+                    itemCard.parentElement.classList.remove('shake');
+                }, 500);
+            }
+            
+            alert(`Equipped ${item.name}!`);
+            updateInventoryDisplay();
+        }
+
+        function useInventoryItem(itemId) {
+            const item = gameState.inventory.items.find(i => i.id === itemId);
+            
+            if (item.quantity > 0) {
+                if (item.effect === 'restoreHealth' && gameState.currentKnight) {
+                    gameState.currentKnight.health = Math.min(
+                        gameState.currentKnight.maxHealth,
+                        gameState.currentKnight.health + item.value
+                    );
+                    item.quantity--;
+                    alert(`Used ${item.name}! Restored ${item.value} health.`);
+                } else if (item.effect === 'restoreMana' && gameState.currentKnight) {
+                    gameState.currentKnight.mana = Math.min(
+                        gameState.currentKnight.maxMana,
+                        gameState.currentKnight.mana + item.value
+                    );
+                    item.quantity--;
+                    alert(`Used ${item.name}! Restored ${item.value} mana.`);
+                } else if (item.effect === 'boostAttack' && gameState.currentKnight) {
+                    gameState.currentKnight.attack += item.value;
+                    item.quantity--;
+                    alert(`Used ${item.name}! Increased attack by ${item.value} for ${item.duration} turns.`);
+                }
+                
+                updateInventoryDisplay();
+            }
+        }
+
+        // Initialize game with sample data
+        window.onload = function() {
+            // Add sample knights for testing
+            gameState.knights.push({
+                id: 1,
+                name: 'Pyro',
+                element: 'fire',
+                level: 5,
+                health: 100,
+                maxHealth: 100,
+                mana: 50,
+                maxMana: 50,
+                attack: 12,
+                defense: 6,
+                speed: 10,
+                experience: 0,
+                expToNextLevel: 100,
+                abilities: elements.fire.abilities.slice(0, 3),
+                equippedWeapon: null,
+                equippedArmor: null,
+                sprite: '🔥'
+            });
+            
+            gameState.knights.push({
+                id: 2,
+                name: 'Frost',
+                element: 'ice',
+                level: 3,
+                health: 80,
+                maxHealth: 80,
+                mana: 60,
+                maxMana: 60,
+                attack: 8,
+                defense: 8,
+                speed: 12,
+                experience: 0,
+                expToNextLevel: 100,
+                abilities: elements.ice.abilities.slice(0, 3),
+                equippedWeapon: null,
+                equippedArmor: null,
+                sprite: '❄️'
+            });
+            
+            gameState.currentKnight = gameState.knights[0];
+            
+            // Set up boss battle button
+            document.getElementById('boss-battle-btn').onclick = startBossBattle;
+            
+            // Initialize island progress
+            updateIslandProgress();
+        };
+    </script>
+</body>
+</html>
