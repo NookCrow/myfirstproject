@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elemental Knights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background: #0A0A14;
+            color: #FFFFFF;
+            overflow: hidden;
+            image-rendering: pixelated;
+        }
+
+        .game-container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            position: relative;
+            border: 4px solid #333366;
+            background: #1A1A2E;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #FFFFFF;
+        }
+
+        .btn {
+            background: #333366;
+            color: white;
+            border: 2px solid #444488;
+            padding: 12px 24px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #444488;
+            transform: scale(1.05);
+        }
+
+        .btn-fire { border-color: #FF2A00; color: #FF7B00; }
+        .btn-ice { border-color: #4AE3FC; color: #FFFFFF; }
+        .btn-earth { border-color: #42B883; color: #8B4513; }
+        .btn-lightning { border-color: #00EEFF; color: #FFE600; }
+
+        /* Main Menu Styles */
+        #main-menu {
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 50px;
+        }
+
+        /* Roster Screen */
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .knight-card {
+            background: #2A2A4A;
+            border: 2px solid #444488;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .knight-card.fire { border-color: #FF2A00; }
+        .knight-card.ice { border-color: #4AE3FC; }
+        .knight-card.earth { border-color: #42B883; }
+        .knight-card.lightning { border-color: #00EEFF; }
+
+        .knight-info {
+            margin: 10px 0;
+        }
+
+        /* Creation Screen */
+        .creation-container {
+            display: flex;
+            gap: 30px;
+        }
+
+        .knight-preview {
+            flex: 1;
+            background: #2A2A4A;
+            border: 2px solid #444488;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .knight-sprite {
+            width: 64px;
+            height: 64px;
+            margin: 20px auto;
+            background: #444488;
+            border: 2px solid #6666AA;
+        }
+
+        .creation-options {
+            flex: 2;
+        }
+
+        .element-selector {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .element-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 20px;
+        }
+
+        .abilities-list {
+            background: #2A2A4A;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #444488;
+        }
+
+        .ability-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #1A1A3A;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .ability-item:hover {
+            border-color: #6666AA;
+        }
+
+        .ability-item.selected {
+            border-color: #FFD700;
+            background: #2A2A5A;
+        }
+
+        /* World Map */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #1A1A3A;
+            border: 2px solid #444488;
+        }
+
+        .island {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .island:hover {
+            transform: scale(1.1);
+        }
+
+        .island.fire {
+            background: radial-gradient(circle, #FF2A00, #8B0000);
+            top: 50px;
+            left: 100px;
+        }
+
+        .island.ice {
+            background: radial-gradient(circle, #4AE3FC, #0066CC);
+            top: 50px;
+            right: 100px;
+        }
+
+        .island.earth {
+            background: radial-gradient(circle, #42B883, #228B22);
+            bottom: 100px;
+            left: 200px;
+        }
+
+        .island.lightning {
+            background: radial-gradient(circle, #00EEFF, #0000FF);
+            bottom: 100px;
+            right: 200px;
+        }
+
+        /* Battle Screen */
+        .battle-container {
+            display: flex;
+            justify-content: space-between;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .combatant {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .enemy-sprite, .player-sprite {
+            width: 80px;
+            height: 80px;
+            margin: 10px auto;
+            border: 2px solid;
+        }
+
+        .enemy-sprite { border-color: #FF4444; background: #552222; }
+        .player-sprite { border-color: #4444FF; background: #222255; }
+
+        .health-bar, .mana-bar {
+            width: 200px;
+            height: 20px;
+            background: #333366;
+            margin: 10px 0;
+            border: 1px solid #444488;
+        }
+
+        .health-fill, .mana-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .health-fill { background: #FF4444; }
+        .mana-fill { background: #4444FF; }
+
+        .battle-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .battle-log {
+            background: #2A2A4A;
+            border: 1px solid #444488;
+            height: 150px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        /* Inventory Screen */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .item-card {
+            background: #2A2A4A;
+            border: 1px solid #444488;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .item-card.equipped {
+            border-color: #FFD700;
+            background: #3A3A5A;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Main Menu Screen -->
+        <div id="main-menu" class="screen active">
+            <h1>ELEMENTAL KNIGHTS</h1>
+            <div class="menu-buttons">
+                <button class="btn" onclick="showScreen('roster-screen')">KNIGHT ROSTER</button>
+                <button class="btn" onclick="showScreen('creation-screen')">CREATE KNIGHT</button>
+                <button class="btn" onclick="showScreen('world-map-screen')">WORLD MAP</button>
+                <button class="btn" onclick="showScreen('inventory-screen')">INVENTORY</button>
+            </div>
+        </div>
+
+        <!-- Roster Screen -->
+        <div id="roster-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <h1>KNIGHT ROSTER</h1>
+            <div id="roster-grid" class="roster-grid">
+                <!-- Knight cards will be generated here -->
+            </div>
+        </div>
+
+        <!-- Knight Creation Screen -->
+        <div id="creation-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <h1>FORGE NEW KNIGHT</h1>
+            <div class="creation-container">
+                <div class="knight-preview">
+                    <h3>KNIGHT PREVIEW</h3>
+                    <div id="knight-sprite" class="knight-sprite"></div>
+                    <div id="knight-stats">
+                        <div>Element: <span id="preview-element">None</span></div>
+                        <div>Health: 100</div>
+                        <div>Mana: 50</div>
+                    </div>
+                </div>
+                <div class="creation-options">
+                    <h3>CHOOSE ELEMENT</h3>
+                    <div class="element-selector">
+                        <button class="btn btn-fire element-btn" onclick="selectElement('fire')">🔥 FIRE</button>
+                        <button class="btn btn-ice element-btn" onclick="selectElement('ice')">❄️ ICE</button>
+                        <button class="btn btn-earth element-btn" onclick="selectElement('earth')">🌿 EARTH</button>
+                        <button class="btn btn-lightning element-btn" onclick="selectElement('lightning')">⚡ LIGHTNING</button>
+                    </div>
+                    
+                    <h3>SELECT ABILITIES (Choose 3)</h3>
+                    <div id="abilities-container" class="abilities-list">
+                        <!-- Abilities will be generated here -->
+                    </div>
+                    
+                    <h3>NAME YOUR KNIGHT</h3>
+                    <input type="text" id="knight-name" placeholder="Enter knight name" style="padding: 10px; width: 100%; background: #2A2A4A; color: white; border: 1px solid #444488;">
+                    
+                    <button class="btn" onclick="createKnight()" style="margin-top: 20px; width: 100%;">FORGE KNIGHT!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- World Map Screen -->
+        <div id="world-map-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <h1>ELEMENTAL ARCHIPELAGO</h1>
+            <div class="map-container">
+                <div class="island fire" onclick="travelToIsland('volcano')">
+                    <div style="text-align: center;">
+                        <div>🔥</div>
+                        <div>VOLCANO ISLE</div>
+                    </div>
+                </div>
+                <div class="island ice" onclick="travelToIsland('glacier')">
+                    <div style="text-align: center;">
+                        <div>❄️</div>
+                        <div>GLACIER PEAK</div>
+                    </div>
+                </div>
+                <div class="island earth" onclick="travelToIsland('terra')">
+                    <div style="text-align: center;">
+                        <div>🌿</div>
+                        <div>TERRA VAULT</div>
+                    </div>
+                </div>
+                <div class="island lightning" onclick="travelToIsland('stormspire')">
+                    <div style="text-align: center;">
+                        <div>⚡</div>
+                        <div>STORMPIRE ISLAND</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="startRandomBattle()">EXPLORE CURRENT AREA</button>
+            </div>
+        </div>
+
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="screen">
+            <h1>BATTLE!</h1>
+            <div class="battle-container">
+                <div class="combatant">
+                    <h3 id="enemy-name">ENEMY</h3>
+                    <div class="enemy-sprite"></div>
+                    <div>Health: <span id="enemy-health">100</span>/100</div>
+                    <div class="health-bar">
+                        <div id="enemy-health-bar" class="health-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="combatant">
+                    <h3 id="player-name">KNIGHT</h3>
+                    <div class="player-sprite"></div>
+                    <div>Health: <span id="player-health">100</span>/100</div>
+                    <div class="health-bar">
+                        <div id="player-health-bar" class="health-fill" style="width: 100%;"></div>
+                    </div>
+                    <div>Mana: <span id="player-mana">50</span>/50</div>
+                    <div class="mana-bar">
+                        <div id="player-mana-bar" class="mana-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="battle-actions">
+                <button class="btn" onclick="playerAttack()">ATTACK</button>
+                <button class="btn" onclick="useAbility(0)">ABILITY 1</button>
+                <button class="btn" onclick="useAbility(1)">ABILITY 2</button>
+                <button class="btn" onclick="useAbility(2)">ABILITY 3</button>
+                <button class="btn" onclick="useItem()">USE ITEM</button>
+                <button class="btn" onclick="fleeBattle()">FLEE</button>
+            </div>
+            
+            <div class="battle-log" id="battle-log">
+                <!-- Battle messages will appear here -->
+            </div>
+        </div>
+
+        <!-- Inventory Screen -->
+        <div id="inventory-screen" class="screen">
+            <button class="btn back-button" onclick="showScreen('main-menu')">← BACK</button>
+            <h1>INVENTORY</h1>
+            <div style="margin-bottom: 20px;">
+                <select id="knight-select" onchange="updateInventoryDisplay()" style="padding: 10px; background: #2A2A4A; color: white; border: 1px solid #444488;">
+                    <option value="">Select a Knight</option>
+                </select>
+            </div>
+            <h3>WEAPONS</h3>
+            <div id="weapons-grid" class="inventory-grid">
+                <!-- Weapons will be generated here -->
+            </div>
+            <h3>ARMOR</h3>
+            <div id="armor-grid" class="inventory-grid">
+                <!-- Armor will be generated here -->
+            </div>
+            <h3>ITEMS</h3>
+            <div id="items-grid" class="inventory-grid">
+                <!-- Items will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            knights: [],
+            currentKnight: null,
+            currentIsland: 'volcano',
+            inventory: {
+                weapons: [
+                    { id: 1, name: 'Basic Sword', type: 'weapon', equipped: false, stats: { attack: 5 } },
+                    { id: 2, name: 'Flame Blade', type: 'weapon', element: 'fire', equipped: false, stats: { attack: 8, fireDamage: 3 } },
+                    { id: 3, name: 'Ice Sword', type: 'weapon', element: 'ice', equipped: false, stats: { attack: 7, iceDamage: 3 } }
+                ],
+                armor: [
+                    { id: 1, name: 'Leather Armor', type: 'armor', equipped: false, stats: { defense: 3 } },
+                    { id: 2, name: 'Plate Mail', type: 'armor', equipped: false, stats: { defense: 6 } }
+                ],
+                items: [
+                    { id: 1, name: 'Health Potion', type: 'item', quantity: 3, effect: 'restoreHealth', value: 30 },
+                    { id: 2, name: 'Mana Potion', type: 'item', quantity: 2, effect: 'restoreMana', value: 25 },
+                    { id: 3, name: 'Revival Herb', type: 'item', quantity: 1, effect: 'revive', value: 100 }
+                ]
+            },
+            battle: {
+                active: false,
+                enemy: null,
+                player: null
+            }
+        };
+
+        // Element Data
+        const elements = {
+            fire: {
+                name: 'Fire',
+                color: '#FF2A00',
+                abilities: ['Flame Slash', 'Ember Burst', 'Fire Wall', 'Meteor Call']
+            },
+            ice: {
+                name: 'Ice', 
+                color: '#4AE3FC',
+                abilities: ['Frost Strike', 'Ice Shield', 'Blizzard', 'Freeze']
+            },
+            earth: {
+                name: 'Earth',
+                color: '#42B883',
+                abilities: ['Stone Fist', 'Root Trap', 'Quake', 'Boulder Toss']
+            },
+            lightning: {
+                name: 'Lightning',
+                color: '#00EEFF',
+                abilities: ['Spark Strike', 'Chain Lightning', 'Speed Boost', 'Thunder Crash']
+            }
+        };
+
+        // Enemy Data
+        const enemies = {
+            volcano: [
+                { name: 'Lava Slime', health: 30, attack: 5, element: 'fire' },
+                { name: 'Fire Imp', health: 25, attack: 8, element: 'fire' }
+            ],
+            glacier: [
+                { name: 'Ice Wisp', health: 28, attack: 6, element: 'ice' },
+                { name: 'Frost Wolf', health: 35, attack: 7, element: 'ice' }
+            ],
+            terra: [
+                { name: 'Rock Golem', health: 50, attack: 10, element: 'earth' },
+                { name: 'Earth Worm', health: 40, attack: 6, element: 'earth' }
+            ],
+            stormspire: [
+                { name: 'Storm Bat', health: 25, attack: 9, element: 'lightning' },
+                { name: 'Tempest Spirit', health: 35, attack: 12, element: 'lightning' }
+            ]
+        };
+
+        // Screen Management
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'roster-screen') {
+                updateRosterDisplay();
+            } else if (screenId === 'inventory-screen') {
+                updateKnightSelect();
+                updateInventoryDisplay();
+            }
+        }
+
+        // Knight Creation
+        let selectedElement = null;
+        let selectedAbilities = [];
+
+        function selectElement(element) {
+            selectedElement = element;
+            document.getElementById('preview-element').textContent = elements[element].name;
+            document.getElementById('knight-sprite').style.borderColor = elements[element].color;
+            document.getElementById('knight-sprite').style.background = elements[element].color + '33';
+            
+            // Update abilities list
+            const abilitiesContainer = document.getElementById('abilities-container');
+            abilitiesContainer.innerHTML = '';
+            selectedAbilities = [];
+            
+            elements[element].abilities.forEach((ability, index) => {
+                const abilityElement = document.createElement('div');
+                abilityElement.className = 'ability-item';
+                abilityElement.textContent = ability;
+                abilityElement.onclick = () => toggleAbility(index, abilityElement);
+                abilitiesContainer.appendChild(abilityElement);
+            });
+        }
+
+        function toggleAbility(index, element) {
+            const abilityIndex = selectedAbilities.indexOf(index);
+            
+            if (abilityIndex === -1) {
+                if (selectedAbilities.length < 3) {
+                    selectedAbilities.push(index);
+                    element.classList.add('selected');
+                }
+            } else {
+                selectedAbilities.splice(abilityIndex, 1);
+                element.classList.remove('selected');
+            }
+        }
+
+        function createKnight() {
+            const name = document.getElementById('knight-name').value.trim();
+            
+            if (!name) {
+                alert('Please enter a name for your knight!');
+                return;
+            }
+            
+            if (!selectedElement) {
+                alert('Please select an element for your knight!');
+                return;
+            }
+            
+            if (selectedAbilities.length !== 3) {
+                alert('Please select exactly 3 abilities!');
+                return;
+            }
+            
+            const knight = {
+                id: gameState.knights.length + 1,
+                name: name,
+                element: selectedElement,
+                level: 1,
+                health: 100,
+                maxHealth: 100,
+                mana: 50,
+                maxMana: 50,
+                attack: 10,
+                defense: 5,
+                abilities: selectedAbilities.map(index => elements[selectedElement].abilities[index]),
+                equippedWeapon: null,
+                equippedArmor: null
+            };
+            
+            gameState.knights.push(knight);
+            gameState.currentKnight = knight;
+            
+            // Reset creation form
+            document.getElementById('knight-name').value = '';
+            selectedElement = null;
+            selectedAbilities = [];
+            document.getElementById('preview-element').textContent = 'None';
+            document.getElementById('knight-sprite').style.borderColor = '#6666AA';
+            document.getElementById('knight-sprite').style.background = '#444488';
+            document.getElementById('abilities-container').innerHTML = '';
+            
+            alert(`Knight ${name} has been forged!`);
+            showScreen('roster-screen');
+        }
+
+        // Roster Management
+        function updateRosterDisplay() {
+            const rosterGrid = document.getElementById('roster-grid');
+            rosterGrid.innerHTML = '';
+            
+            gameState.knights.forEach(knight => {
+                const knightCard = document.createElement('div');
+                knightCard.className = `knight-card ${knight.element}`;
+                knightCard.innerHTML = `
+                    <h3>${knight.name}</h3>
+                    <div class="knight-info">
+                        <div>Element: ${elements[knight.element].name}</div>
+                        <div>Level: ${knight.level}</div>
+                        <div>Health: ${knight.health}/${knight.maxHealth}</div>
+                        <div>Mana: ${knight.mana}/${knight.maxMana}</div>
+                    </div>
+                    <button class="btn" onclick="selectKnight(${knight.id})">SELECT</button>
+                    <button class="btn" onclick="viewKnightProfile(${knight.id})">PROFILE</button>
+                `;
+                rosterGrid.appendChild(knightCard);
+            });
+            
+            // Add empty slots
+            const emptySlots = 4 - gameState.knights.length;
+            for (let i = 0; i < emptySlots; i++) {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'knight-card';
+                emptyCard.innerHTML = `
+                    <h3>Empty Slot</h3>
+                    <button class="btn" onclick="showScreen('creation-screen')">CREATE KNIGHT</button>
+                `;
+                rosterGrid.appendChild(emptyCard);
+            }
+        }
+
+        function selectKnight(knightId) {
+            gameState.currentKnight = gameState.knights.find(k => k.id === knightId);
+            alert(`${gameState.currentKnight.name} is now your active knight!`);
+            showScreen('main-menu');
+        }
+
+        function viewKnightProfile(knightId) {
+            const knight = gameState.knights.find(k => k.id === knightId);
+            alert(`Knight Profile:\nName: ${knight.name}\nElement: ${elements[knight.element].name}\nLevel: ${knight.level}\nAbilities: ${knight.abilities.join(', ')}`);
+        }
+
+        // World Map & Travel
+        function travelToIsland(island) {
+            gameState.currentIsland = island;
+            const islandNames = {
+                volcano: 'Volcano Isle',
+                glacier: 'Glacier Peak', 
+                terra: 'Terra Vault',
+                stormspire: 'Stormspire Island'
+            };
+            alert(`Traveling to ${islandNames[island]}!`);
+        }
+
+        // Battle System
+        function startRandomBattle() {
+            if (!gameState.currentKnight) {
+                alert('Please select a knight first!');
+                return;
+            }
+            
+            const islandEnemies = enemies[gameState.currentIsland];
+            const randomEnemy = {...islandEnemies[Math.floor(Math.random() * islandEnemies.length)]};
+            
+            gameState.battle = {
+                active: true,
+                enemy: randomEnemy,
+                player: {...gameState.currentKnight}
+            };
+            
+            // Setup battle UI
+            document.getElementById('enemy-name').textContent = gameState.battle.enemy.name;
+            document.getElementById('player-name').textContent = gameState.battle.player.name;
+            updateBattleUI();
+            
+            showScreen('battle-screen');
+            addToBattleLog(`A wild ${gameState.battle.enemy.name} appears!`);
+        }
+
+        function updateBattleUI() {
+            const enemy = gameState.battle.enemy;
+            const player = gameState.battle.player;
+            
+            // Update health bars
+            document.getElementById('enemy-health').textContent = enemy.health;
+            document.getElementById('enemy-health-bar').style.width = `${(enemy.health / enemy.maxHealth || 30) * 100}%`;
+            
+            document.getElementById('player-health').textContent = player.health;
+            document.getElementById('player-health-bar').style.width = `${(player.health / player.maxHealth) * 100}%`;
+            
+            document.getElementById('player-mana').textContent = player.mana;
+            document.getElementById('player-mana-bar').style.width = `${(player.mana / player.maxMana) * 100}%`;
+        }
+
+        function addToBattleLog(message) {
+            const log = document.getElementById('battle-log');
+            log.innerHTML += `<div>${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function playerAttack() {
+            if (!gameState.battle.active) return;
+            
+            const player = gameState.battle.player;
+            const enemy = gameState.battle.enemy;
+            
+            const damage = Math.max(1, player.attack - Math.floor(Math.random() * 3));
+            enemy.health -= damage;
+            
+            addToBattleLog(`${player.name} attacks for ${damage} damage!`);
+            
+            if (enemy.health <= 0) {
+                endBattle(true);
+                return;
+            }
+            
+            updateBattleUI();
+            setTimeout(enemyTurn, 1000);
+        }
+
+        function useAbility(abilityIndex) {
+            if (!gameState.battle.active) return;
+            
+            const player = gameState.battle.player;
+            const enemy = gameState.battle.enemy;
+            const ability = player.abilities[abilityIndex];
+            
+            if (!ability) {
+                addToBattleLog('No ability in that slot!');
+                return;
+            }
+            
+            // Simple mana cost
+            const manaCost = 15;
+            if (player.mana < manaCost) {
+                addToBattleLog('Not enough mana!');
+                return;
+            }
+            
+            player.mana -= manaCost;
+            const damage = Math.max(5, player.attack + Math.floor(Math.random() * 10));
+            enemy.health -= damage;
+            
+            addToBattleLog(`${player.name} uses ${ability} for ${damage} damage!`);
+            
+            if (enemy.health <= 0) {
+                endBattle(true);
+                return;
+            }
+            
+            updateBattleUI();
+            setTimeout(enemyTurn, 1000);
+        }
+
+        function enemyTurn() {
+            if (!gameState.battle.active) return;
+            
+            const player = gameState.battle.player;
+            const enemy = gameState.battle.enemy;
+            
+            const damage = Math.max(1, enemy.attack - Math.floor(Math.random() * 2));
+            player.health -= damage;
+            
+            addToBattleLog(`${enemy.name} attacks for ${damage} damage!`);
+            
+            if (player.health <= 0) {
+                endBattle(false);
+                return;
+            }
+            
+            updateBattleUI();
+        }
+
+        function useItem() {
+            // Simple health potion implementation
+            const potion = gameState.inventory.items.find(item => item.name === 'Health Potion');
+            if (potion && potion.quantity > 0) {
+                gameState.battle.player.health = Math.min(
+                    gameState.battle.player.maxHealth,
+                    gameState.battle.player.health + 30
+                );
+                potion.quantity--;
+                addToBattleLog('Used Health Potion! Restored 30 health.');
+                updateBattleUI();
+                setTimeout(enemyTurn, 1000);
+            } else {
+                addToBattleLog('No Health Potions available!');
+            }
+        }
+
+        function fleeBattle() {
+            addToBattleLog('You fled from battle!');
+            setTimeout(() => showScreen('world-map-screen'), 1000);
+        }
+
+        function endBattle(victory) {
+            if (victory) {
+                addToBattleLog('Victory! You defeated the enemy!');
+                // Grant experience and items
+                if (gameState.currentKnight) {
+                    gameState.currentKnight.level++;
+                    gameState.currentKnight.maxHealth += 10;
+                    gameState.currentKnight.health = gameState.currentKnight.maxHealth;
+                    gameState.currentKnight.maxMana += 5;
+                    gameState.currentKnight.mana = gameState.currentKnight.maxMana;
+                    gameState.currentKnight.attack += 2;
+                    gameState.currentKnight.defense += 1;
+                    
+                    // Add random loot
+                    const loot = ['Health Potion', 'Mana Potion'][Math.floor(Math.random() * 2)];
+                    const item = gameState.inventory.items.find(i => i.name === loot);
+                    if (item) item.quantity++;
+                    
+                    addToBattleLog(`Level up! ${gameState.currentKnight.name} is now level ${gameState.currentKnight.level}!`);
+                    addToBattleLog(`Found ${loot}!`);
+                }
+            } else {
+                addToBattleLog('You were defeated...');
+            }
+            
+            gameState.battle.active = false;
+            setTimeout(() => showScreen('world-map-screen'), 3000);
+        }
+
+        // Inventory Management
+        function updateKnightSelect() {
+            const select = document.getElementById('knight-select');
+            select.innerHTML = '<option value="">Select a Knight</option>';
+            
+            gameState.knights.forEach(knight => {
+                const option = document.createElement('option');
+                option.value = knight.id;
+                option.textContent = knight.name;
+                select.appendChild(option);
+            });
+        }
+
+        function updateInventoryDisplay() {
+            const knightId = document.getElementById('knight-select').value;
+            const knight = gameState.knights.find(k => k.id === parseInt(knightId));
+            
+            // Display weapons
+            const weaponsGrid = document.getElementById('weapons-grid');
+            weaponsGrid.innerHTML = '';
+            
+            gameState.inventory.weapons.forEach(weapon => {
+                const weaponCard = document.createElement('div');
+                weaponCard.className = `item-card ${weapon.equipped ? 'equipped' : ''}`;
+                weaponCard.innerHTML = `
+                    <div>${weapon.name}</div>
+                    <div>ATK: ${weapon.stats.attack}</div>
+                    ${weapon.element ? `<div>${weapon.element.toUpperCase()}</div>` : ''}
+                    <button class="btn" onclick="equipItem('weapon', ${weapon.id})">${weapon.equipped ? 'UNEQUIP' : 'EQUIP'}</button>
+                `;
+                weaponsGrid.appendChild(weaponCard);
+            });
+            
+            // Display armor
+            const armorGrid = document.getElementById('armor-grid');
+            armorGrid.innerHTML = '';
+            
+            gameState.inventory.armor.forEach(armor => {
+                const armorCard = document.createElement('div');
+                armorCard.className = `item-card ${armor.equipped ? 'equipped' : ''}`;
+                armorCard.innerHTML = `
+                    <div>${armor.name}</div>
+                    <div>DEF: ${armor.stats.defense}</div>
+                    <button class="btn" onclick="equipItem('armor', ${armor.id})">${armor.equipped ? 'UNEQUIP' : 'EQUIP'}</button>
+                `;
+                armorGrid.appendChild(armorCard);
+            });
+            
+            // Display items
+            const itemsGrid = document.getElementById('items-grid');
+            itemsGrid.innerHTML = '';
+            
+            gameState.inventory.items.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <div>${item.name}</div>
+                    <div>Qty: ${item.quantity}</div>
+                    <button class="btn" onclick="useInventoryItem(${item.id})">USE</button>
+                `;
+                itemsGrid.appendChild(itemCard);
+            });
+        }
+
+        function equipItem(type, itemId) {
+            if (!gameState.currentKnight) {
+                alert('Please select a knight first!');
+                return;
+            }
+            
+            const items = gameState.inventory[type + 's'];
+            const item = items.find(i => i.id === itemId);
+            
+            // Unequip currently equipped item of same type
+            items.forEach(i => {
+                if (i.equipped) i.equipped = false;
+            });
+            
+            // Toggle equip state
+            item.equipped = !item.equipped;
+            
+            if (item.equipped) {
+                // Apply item stats to knight
+                if (type === 'weapon') {
+                    gameState.currentKnight.equippedWeapon = item;
+                    gameState.currentKnight.attack += item.stats.attack;
+                } else if (type === 'armor') {
+                    gameState.currentKnight.equippedArmor = item;
+                    gameState.currentKnight.defense += item.stats.defense;
+                }
+                alert(`Equipped ${item.name}!`);
+            } else {
+                // Remove item stats from knight
+                if (type === 'weapon') {
+                    gameState.currentKnight.attack -= item.stats.attack;
+                    gameState.currentKnight.equippedWeapon = null;
+                } else if (type === 'armor') {
+                    gameState.currentKnight.defense -= item.stats.defense;
+                    gameState.currentKnight.equippedArmor = null;
+                }
+                alert(`Unequipped ${item.name}!`);
+            }
+            
+            updateInventoryDisplay();
+        }
+
+        function useInventoryItem(itemId) {
+            const item = gameState.inventory.items.find(i => i.id === itemId);
+            
+            if (item.quantity > 0) {
+                if (item.effect === 'restoreHealth' && gameState.currentKnight) {
+                    gameState.currentKnight.health = Math.min(
+                        gameState.currentKnight.maxHealth,
+                        gameState.currentKnight.health + item.value
+                    );
+                    item.quantity--;
+                    alert(`Used ${item.name}! Restored ${item.value} health.`);
+                } else if (item.effect === 'rest
